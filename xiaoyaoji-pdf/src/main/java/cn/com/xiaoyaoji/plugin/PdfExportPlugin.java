@@ -499,6 +499,9 @@ public class PdfExportPlugin extends DocExportPlugin {
         }
         for (int i = 0; i < jsonArray.size(); i++) {
             JSONObject entry = jsonArray.getJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
             String name = entry.getString("name");
             if (parentKey != null) {
                 name = parentKey + name;
