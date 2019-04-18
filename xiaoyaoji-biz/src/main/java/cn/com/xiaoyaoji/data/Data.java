@@ -120,4 +120,5 @@ public interface Data {
     List<String> getAllProjectValidIds();
 
 
+    int deleteDocHistory();
 }
