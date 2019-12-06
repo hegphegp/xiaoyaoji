@@ -1,10 +1,10 @@
 
 
-![LOGO](http://www.xiaoyaoji.cn/assets/img/logo/full.png)
+![LOGO](https://images.gitee.com/uploads/images/2019/1206/153115_1e497679_759950.png)
 # 小幺鸡文档管理工具，支持富文本、markdown、http、websocket 及其在线测试
 ### [在线演示地址demo](http://www.xiaoyaoji.cn/project/demo)
 
-### [下载最新版本](https://github.com/zhoujingjie/xiaoyaoji/releases)
+### [下载最新版本](https://gitee.com/zhoujingjie/apiManager/releases)
 
 ## 兼容性
 * 静态页系统暂时只兼容chrome，其他浏览器未测试。
@@ -21,7 +21,7 @@
 
 
 ## bug
-如果大家发现了bug，可以在[Issues](https://github.com/zhoujingjie/xiaoyaoji/issues)里面提交，然后也可以直接修改bug然后提交代码
+如果大家发现了bug，可以在[Issues](https://gitee.com/zhoujingjie/apiManager)里面提交，然后也可以直接修改bug然后提交代码
 提交bug时请尽量多提供一些信息，如截图
 
 
