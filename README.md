@@ -2,11 +2,17 @@
 
 ![LOGO](https://images.gitee.com/uploads/images/2019/1206/153115_1e497679_759950.png)
 # 小幺鸡文档管理工具，支持富文本、markdown、http、websocket 及其在线测试
-### [在线演示地址demo](http://www.xiaoyaoji.cn/project/demo)
+[在线演示地址demo](http://www.xiaoyaoji.cn/project/demo)
 
-### [下载最新版本](https://gitee.com/zhoujingjie/apiManager/releases)
+[下载最新版本](https://gitee.com/zhoujingjie/apiManager/releases)
 
-## 兼容性
+## 离线部署版本不提供技术支持与维护了，请使用最新的显示版本 http://www.docway.net
+
+
+
+
+*兼容性* 
+
 * 静态页系统暂时只兼容chrome，其他浏览器未测试。
 * 后端：jdk1.7 tomcat7  mariadb5.5
 
