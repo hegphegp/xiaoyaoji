@@ -79,7 +79,8 @@ public class ConfigUtils {
     }
 
     public static String getJdbcURL(){
-        return properties.getProperty("jdbc.url");
+        String jdbcUrl = System.getenv().get("jdbc.url");
+        return StringUtils.hasText(jdbcUrl)? jdbcUrl:properties.getProperty("jdbc.url");
     }
 
     public static String getJdbcUsername(){

@@ -70,7 +70,6 @@ public class AuthorityInterceptor implements HandlerInterceptor {
                         synchronized (AuthorityInterceptor.class) {
                             if (ConfigUtils.getRealFileAccessURL()==null) {
                                 ConfigUtils.setRealFileAccessURL(basePath + ConfigUtils.getFileAccessURL());
-                                System.out.println(ConfigUtils.getRealFileAccessURL()+"----------------");
                             }
                         }
                     }
