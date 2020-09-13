@@ -6,9 +6,12 @@ import cn.com.xiaoyaoji.core.exception.NotLoginException;
 import cn.com.xiaoyaoji.core.util.ConfigUtils;
 import cn.com.xiaoyaoji.data.bean.User;
 import cn.com.xiaoyaoji.util.CacheUtils;
+import cn.com.xiaoyaoji.utils.ServletUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -58,12 +61,24 @@ public class AuthorityInterceptor implements HandlerInterceptor {
         if(modelAndView!=null && modelAndView.getViewName()!=null) {
             if (modelAndView.getModel().get("fileAccess") == null) {
                 if(!modelAndView.getViewName().startsWith("redirect:")) {
-                    modelAndView.getModel().put("fileAccess", ConfigUtils.getFileAccessURL());
+                    String basePath = StringUtils.hasText(request.getHeader("x-forwarded-host"))? ServletUtils.getBasePathWhenRequestIsForwarded():"";
+                    basePath += StringUtils.hasText(request.getContextPath())? request.getContextPath():"";
+                    if (ConfigUtils.getBasePrefixPath()==null) {
+                        ConfigUtils.setBasePrefixPath(basePath);
+                    }
+                    if (ConfigUtils.getRealFileAccessURL()==null) {
+                        synchronized (AuthorityInterceptor.class) {
+                            if (ConfigUtils.getRealFileAccessURL()==null) {
+                                ConfigUtils.setRealFileAccessURL(basePath + ConfigUtils.getFileAccessURL());
+                                System.out.println(ConfigUtils.getRealFileAccessURL()+"----------------");
+                            }
+                        }
+                    }
+                    modelAndView.getModel().put("fileAccess", ConfigUtils.getRealFileAccessURL());
                 }
             }
         }
     }
-
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {

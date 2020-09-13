@@ -1,6 +1,7 @@
 package cn.com.xiaoyaoji.util;
 
 import cn.com.xiaoyaoji.core.util.ConfigUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * @author zhoujingjie
@@ -9,11 +10,11 @@ import cn.com.xiaoyaoji.core.util.ConfigUtils;
 public class AvatarUtils {
 
     public static String getAvatar(String avatar){
-        if(avatar == null || avatar.length() == 0)
-            return avatar;
-        if(avatar.startsWith("http")){
+        if(StringUtils.isEmpty(avatar) || avatar.startsWith("http")) {
             return avatar;
         }
-        return ConfigUtils.getProperty("file.access.url")+avatar;
+        if (avatar.startsWith(ConfigUtils.getRealFileAccessURL())) return avatar;
+        return ConfigUtils.getRealFileAccessURL()+avatar;
     }
+
 }

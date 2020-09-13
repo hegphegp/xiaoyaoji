@@ -12,7 +12,9 @@ File Encoding         : 65001
 
 Date: 2017-09-07 11:16:31
 */
-
+DROP DATABASE IF EXISTS `xiaoyaoji`;
+CREATE DATABASE `xiaoyaoji` CHARACTER SET 'utf8mb4' COLLATE 'utf8mb4_general_ci';
+use `xiaoyaoji`;
 SET FOREIGN_KEY_CHECKS=0;
 
 -- ----------------------------

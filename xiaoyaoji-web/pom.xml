@@ -129,8 +129,8 @@
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <compilerVersion>1.7</compilerVersion>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>8</source>
+                    <target>8</target>
                     <fork>true</fork>
                     <compilerArguments>
                         <extdirs>${project.basedir}/src/main/webapp/WEB-INF/lib/</extdirs>

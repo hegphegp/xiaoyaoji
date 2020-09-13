@@ -25,7 +25,7 @@ public class DefaultFileProvider extends AbstractFileProvider {
      */
     @Override
     public String upload(String path, byte[] bytes) throws IOException {
-        Path targetPath = Paths.get(ConfigUtils.getProperty("file.upload.dir"), path);
+        Path targetPath = Paths.get(ConfigUtils.getFileUploadDir(), path);
         Path parent = targetPath.getParent();
         if (!Files.exists(parent)) {
             Files.createDirectories(parent);
@@ -42,7 +42,7 @@ public class DefaultFileProvider extends AbstractFileProvider {
      */
     @Override
     public boolean delete(String path) throws IOException {
-        Path p = Paths.get(ConfigUtils.getProperty("file.upload.dir") + path);
+        Path p = Paths.get(ConfigUtils.getFileUploadDir() + path);
         Files.delete(p);
         return !Files.exists(p);
     }

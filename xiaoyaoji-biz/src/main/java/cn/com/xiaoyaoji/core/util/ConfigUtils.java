@@ -2,6 +2,7 @@ package cn.com.xiaoyaoji.core.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -13,6 +14,10 @@ import java.util.Properties;
 public class ConfigUtils {
     private static Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
     private static Properties properties;
+    private static String basePrefixPath = null;
+    // 设置经过请求转发后，图片资源真正的访问路径
+    private static String realFileAccessURL = null;
+
     static {
         properties = new Properties();
         ClassLoader classLoader =Thread.currentThread().getContextClassLoader();
@@ -27,6 +32,23 @@ public class ConfigUtils {
             logger.info("not found config.dev.properties");
         }
     }
+
+    public static String getRealFileAccessURL() {
+        return realFileAccessURL;
+    }
+
+    public static void setRealFileAccessURL(String realFileAccessURL) {
+        ConfigUtils.realFileAccessURL = realFileAccessURL;
+    }
+
+    public static String getBasePrefixPath() {
+        return basePrefixPath;
+    }
+
+    public static void setBasePrefixPath(String basePrefixPath) {
+        ConfigUtils.basePrefixPath = basePrefixPath;
+    }
+
     public static String getProperty(String key){
         return properties.getProperty(key);
     }
@@ -38,9 +60,14 @@ public class ConfigUtils {
         return value;
     }
 
-
     public static String getFileAccessURL(){
-        return properties.getProperty("file.access.url");
+        String fileAccessURL = System.getenv().get("file.access.url");
+        return StringUtils.hasText(fileAccessURL)? fileAccessURL:properties.getProperty("file.access.url");
+    }
+
+    public static String getFileUploadDir(){
+        String fileUploadDir = System.getenv().get("file.upload.dir");
+        return StringUtils.hasText(fileUploadDir)? fileUploadDir:properties.getProperty("file.upload.dir");
     }
 
     public static String getBucketURL(){
@@ -54,12 +81,17 @@ public class ConfigUtils {
     public static String getJdbcURL(){
         return properties.getProperty("jdbc.url");
     }
+
     public static String getJdbcUsername(){
-        return properties.getProperty("jdbc.username");
+        String username = System.getenv().get("jdbc.username");
+        return StringUtils.hasText(username)? username:properties.getProperty("jdbc.username");
     }
+
     public static String getJdbcPassword(){
-        return properties.getProperty("jdbc.password");
+        String username = System.getenv().get("jdbc.password");
+        return StringUtils.hasText(username)? username:properties.getProperty("jdbc.password");
     }
+
     public static String getJdbcDriverclass(){
         return properties.getProperty("jdbc.driverclass");
     }
