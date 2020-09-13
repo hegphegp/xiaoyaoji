@@ -24,12 +24,12 @@ CREATE TABLE `attach` (
   `url` varchar(1000) DEFAULT NULL,
   `type` varchar(45) DEFAULT NULL,
   `sort` int(11) DEFAULT NULL,
-  `relatedId` char(12) DEFAULT NULL,
-  `fileName` varchar(1000) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `projectId` char(12) DEFAULT NULL,
+  `related_id` char(12) DEFAULT NULL,
+  `file_name` varchar(1000) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `project_id` char(12) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `normal` (`relatedId`)
+  KEY `attach_related_id_index` (`related_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -42,13 +42,13 @@ CREATE TABLE `doc` (
   `sort` int(11) DEFAULT '100',
   `type` varchar(100) DEFAULT NULL,
   `content` longtext,
-  `createTime` datetime DEFAULT NULL,
-  `lastUpdateTime` datetime DEFAULT NULL,
-  `parentId` char(12) DEFAULT NULL,
-  `projectId` char(12) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `last_update_time` datetime DEFAULT NULL,
+  `parent_id` char(12) DEFAULT NULL,
+  `project_id` char(12) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `parentId` (`parentId`) USING BTREE,
-  KEY `projectId` (`projectId`) USING BTREE
+  KEY `doc_parent_id_index` (`parent_id`) USING BTREE,
+  KEY `doc_project_id_index` (`project_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -61,12 +61,12 @@ CREATE TABLE `doc_history` (
   `sort` int(11) DEFAULT '100',
   `type` varchar(100) DEFAULT NULL,
   `content` longtext,
-  `createTime` datetime DEFAULT NULL,
-  `parentId` char(12) DEFAULT NULL,
-  `projectId` char(12) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `parent_id` char(12) DEFAULT NULL,
+  `project_id` char(12) DEFAULT NULL,
   `comment` varchar(1000) DEFAULT NULL,
-  `userId` char(12) DEFAULT NULL,
-  `docId` char(12) DEFAULT NULL,
+  `user_id` char(12) DEFAULT NULL,
+  `doc_id` char(12) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=51473 DEFAULT CHARSET=utf8mb4;
 
@@ -77,8 +77,8 @@ DROP TABLE IF EXISTS `email_token`;
 CREATE TABLE `email_token` (
   `id` char(12) NOT NULL,
   `email` varchar(45) NOT NULL,
-  `isUsed` tinyint(1) NOT NULL DEFAULT '0',
-  `createtime` datetime NOT NULL,
+  `is_used` tinyint(1) NOT NULL DEFAULT '0',
+  `create_time` datetime NOT NULL,
   `token` char(32) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -90,8 +90,8 @@ DROP TABLE IF EXISTS `find_password`;
 CREATE TABLE `find_password` (
   `id` char(12) NOT NULL DEFAULT '',
   `email` varchar(45) DEFAULT NULL,
-  `isUsed` tinyint(1) DEFAULT '0',
-  `createTime` datetime DEFAULT NULL,
+  `is_used` tinyint(1) DEFAULT '0',
+  `create_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -103,24 +103,24 @@ CREATE TABLE `interface` (
   `id` char(14) NOT NULL DEFAULT '',
   `name` varchar(50) DEFAULT NULL,
   `description` text,
-  `folderId` char(14) DEFAULT NULL,
+  `folder_id` char(14) DEFAULT NULL,
   `url` varchar(300) DEFAULT NULL,
-  `requestMethod` varchar(50) DEFAULT NULL,
-  `contentType` varchar(50) DEFAULT NULL,
-  `requestHeaders` text,
-  `requestArgs` text,
-  `responseArgs` text,
+  `request_method` varchar(50) DEFAULT NULL,
+  `content_type` varchar(50) DEFAULT NULL,
+  `request_headers` text,
+  `request_args` text,
+  `response_args` text,
   `example` mediumtext,
-  `moduleId` varchar(50) DEFAULT NULL,
-  `projectId` char(14) DEFAULT NULL,
-  `lastUpdateTime` datetime DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `dataType` varchar(30) DEFAULT NULL,
+  `module_id` varchar(50) DEFAULT NULL,
+  `project_id` char(14) DEFAULT NULL,
+  `last_update_time` datetime DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `data_type` varchar(30) DEFAULT NULL,
   `protocol` varchar(30) DEFAULT NULL,
   `status` char(10) DEFAULT 'ENABLE',
   `sort` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `projectid` (`projectId`) USING BTREE
+  KEY `interface_project_id_index` (`project_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -130,12 +130,12 @@ DROP TABLE IF EXISTS `interface_folder`;
 CREATE TABLE `interface_folder` (
   `id` char(14) NOT NULL DEFAULT '',
   `name` varchar(50) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `moduleId` char(14) DEFAULT NULL,
-  `projectId` char(14) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `module_id` char(14) DEFAULT NULL,
+  `project_id` char(14) DEFAULT NULL,
   `sort` int(11) DEFAULT '100',
   PRIMARY KEY (`id`),
-  KEY `projectid` (`projectId`) USING BTREE
+  KEY `interface_folder_project_id_index` (`project_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -147,14 +147,14 @@ CREATE TABLE `module` (
   `name` varchar(50) DEFAULT NULL,
   `host` varchar(255) DEFAULT NULL,
   `description` mediumtext,
-  `lastUpdateTime` datetime DEFAULT NULL,
-  `projectId` char(14) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `requestHeaders` text,
-  `requestArgs` text,
+  `last_update_time` datetime DEFAULT NULL,
+  `project_id` char(14) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `request_headers` text,
+  `request_args` text,
   `sort` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `projectid` (`projectId`) USING BTREE
+  KEY `module_project_id_index` (`project_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -166,13 +166,13 @@ CREATE TABLE `project` (
   `name` varchar(50) DEFAULT NULL,
   `description` varchar(300) DEFAULT NULL COMMENT 'test',
   `teamId` char(14) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `userId` char(14) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `user_id` char(14) DEFAULT NULL,
   `status` varchar(20) DEFAULT 'VALID',
   `permission` varchar(20) DEFAULT 'PRIVATE',
   `environments` text,
   `details` text,
-  `lastUpdateTime` datetime DEFAULT NULL,
+  `last_update_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -184,7 +184,7 @@ CREATE TABLE `project_global` (
   `id` char(12) NOT NULL DEFAULT '',
   `environment` mediumtext,
   `http` mediumtext,
-  `projectId` char(12) NOT NULL DEFAULT '',
+  `project_id` char(12) NOT NULL DEFAULT '',
   `status` mediumtext
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -195,12 +195,12 @@ DROP TABLE IF EXISTS `project_log`;
 CREATE TABLE `project_log` (
   `id` char(14) NOT NULL DEFAULT '',
   `userId` char(14) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
   `log` text,
-  `projectId` char(14) DEFAULT NULL,
+  `project_id` char(14) DEFAULT NULL,
   `action` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `projectid` (`projectId`) USING BTREE
+  KEY `project_log_project_id_index` (`project_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -209,14 +209,14 @@ CREATE TABLE `project_log` (
 DROP TABLE IF EXISTS `project_user`;
 CREATE TABLE `project_user` (
   `id` char(14) NOT NULL,
-  `projectId` char(14) DEFAULT NULL,
-  `userId` char(14) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
+  `project_id` char(14) DEFAULT NULL,
+  `user_id` char(14) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
   `status` char(255) DEFAULT 'PENDING',
   `editable` char(3) DEFAULT 'YES',
-  `commonlyUsed` char(3) DEFAULT 'NO',
+  `commonly_used` char(3) DEFAULT 'NO',
   PRIMARY KEY (`id`),
-  KEY `project_user` (`projectId`,`userId`) USING BTREE
+  KEY `project_user_user_index` (`project_id`,`user_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -226,13 +226,13 @@ DROP TABLE IF EXISTS `share`;
 CREATE TABLE `share` (
   `id` char(12) NOT NULL DEFAULT '',
   `name` varchar(50) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
-  `userId` char(12) DEFAULT NULL,
-  `shareAll` char(3) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
+  `user_id` char(12) DEFAULT NULL,
+  `share_all` char(3) DEFAULT NULL,
   `password` varchar(20) DEFAULT NULL,
-  `moduleIds` varchar(2000) DEFAULT NULL,
-  `projectId` char(12) DEFAULT NULL,
-  `docIds` varchar(2000) DEFAULT NULL,
+  `module_ids` varchar(2000) DEFAULT NULL,
+  `project_id` char(12) DEFAULT NULL,
+  `doc_ids` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -253,7 +253,7 @@ CREATE TABLE `team` (
   `name` varchar(50) DEFAULT NULL,
   `description` varchar(300) DEFAULT NULL,
   `userId` char(14) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
   `status` varchar(20) DEFAULT 'VALID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -264,28 +264,28 @@ CREATE TABLE `team` (
 DROP TABLE IF EXISTS `team_user`;
 CREATE TABLE `team_user` (
   `id` char(14) NOT NULL,
-  `teamId` char(14) DEFAULT NULL,
-  `userId` char(14) DEFAULT NULL,
-  `createTime` datetime DEFAULT NULL,
+  `team_id` char(14) DEFAULT NULL,
+  `user_id` char(14) DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
--- Table structure for user
+-- Table structure for sys_user
 -- ----------------------------
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
+DROP TABLE IF EXISTS `sys_user`;
+CREATE TABLE `sys_user` (
   `id` char(12) NOT NULL,
   `email` varchar(45) DEFAULT NULL,
-  `createtime` datetime DEFAULT NULL,
+  `create_time` datetime DEFAULT NULL,
   `password` char(32) DEFAULT NULL,
   `type` varchar(5) DEFAULT 'USER',
   `nickname` varchar(30) DEFAULT NULL,
   `avatar` varchar(200) DEFAULT NULL,
   `status` char(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`),
-  UNIQUE KEY `username` (`email`) USING BTREE
+  UNIQUE KEY `sys_user_id_unique_index` (`id`),
+  UNIQUE KEY `sys_user_email_index` (`email`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -294,42 +294,9 @@ CREATE TABLE `user` (
 DROP TABLE IF EXISTS `user_third`;
 CREATE TABLE `user_third` (
   `id` varchar(60) NOT NULL,
-  `userid` char(12) NOT NULL,
+  `user_id` char(12) NOT NULL,
   `type` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `userId` (`userid`)
+  KEY `user_third_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ----------------------------
--- Procedure structure for trans_module
--- ----------------------------
-DROP PROCEDURE IF EXISTS `trans_module`;
-DELIMITER ;;
-CREATE DEFINER=`root`@`%` PROCEDURE `trans_module`()
-begin
-DECLARE done INT DEFAULT FALSE;
-declare id varchar(100);
-declare name,host,projectId varchar(100);
-declare lastUpdateTime,createTime datetime;
-declare description MEDIUMTEXT;
-
-declare cur1 cursor for select id from module limit 100;
-DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-open cur1;
-read_loop: LOOP
-
-FETCH  cur1 into id;
-
-if done
-	then  leave read_loop;
-end if;
-
-select id;
-
-end LOOP;
-close cur1;
-
-end
-;;
-DELIMITER ;
