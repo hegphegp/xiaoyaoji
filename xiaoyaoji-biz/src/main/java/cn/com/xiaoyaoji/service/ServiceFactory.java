@@ -5,6 +5,7 @@ import cn.com.xiaoyaoji.core.util.ResultUtils;
 import cn.com.xiaoyaoji.core.util.StringUtils;
 import cn.com.xiaoyaoji.data.DataFactory;
 import cn.com.xiaoyaoji.data.bean.*;
+import cn.com.xiaoyaoji.data.bean.Module;
 import cn.com.xiaoyaoji.integration.file.FileManager;
 import org.apache.log4j.Logger;
 
@@ -89,7 +90,7 @@ public class ServiceFactory {
             user = new User();
             user.setId(StringUtils.id());
             user.setNickname(thirdparty.getNickName());
-            user.setCreatetime(new Date());
+            user.setCreateTime(new Date());
             user.setType(User.Type.USER);
             user.setAvatar(thirdparty.getLogo());
             user.setStatus(User.Status.VALID);

@@ -176,7 +176,7 @@ public class DataFactory implements Data {
         return process(new Handler<User>() {
             @Override
             public User handle(Connection connection, QueryRunner qr) throws SQLException {
-                String sql = "select * from user where email=? and password=?";
+                String sql = "select * from sys_user where email=? and password=?";
                 return qr.query(connection, sql, new BeanHandler<>(User.class), email, password);
             }
         });
@@ -212,7 +212,7 @@ public class DataFactory implements Data {
         return process(new Handler<User>() {
             @Override
             public User handle(Connection connection, QueryRunner qr) throws SQLException {
-                String sql = "select * from " + TableNames.USER + " where id = (select userid from " + TableNames.USER_THIRD + " where id=?)";
+                String sql = "select * from " + TableNames.USER + " where id = (select user_id from " + TableNames.USER_THIRD + " where id=?)";
                 return qr.query(connection, sql, new BeanHandler<>(User.class), thirdId);
             }
         });
@@ -226,16 +226,16 @@ public class DataFactory implements Data {
                 User user = getById(User.class, thirdparty.getUserId());
                 AssertUtils.notNull(user, "无效用户");
                 //检查是否绑定
-                int rs = qr.query(connection, "select count(id) from " + TableNames.USER_THIRD + " where userId=? and type=? and id =?", new IntegerResultHandler(), thirdparty.getUserId(), thirdparty.getType(), thirdparty.getId());
+                int rs = qr.query(connection, "select count(id) from " + TableNames.USER_THIRD + " where user_id=? and type=? and id =?", new IntegerResultHandler(), thirdparty.getUserId(), thirdparty.getType(), thirdparty.getId());
                 if (rs == 1) {
                     return rs;
                 }
                 //删除第三方
-                rs = qr.update(connection, "delete from " + TableNames.USER_THIRD + " where  id=?", thirdparty.getId());
+                rs = qr.update(connection, "delete from " + TableNames.USER_THIRD + " where id=?", thirdparty.getId());
                 // 创建第三方
                 StringBuilder thirdSql = new StringBuilder("insert into ");
                 thirdSql.append(TableNames.USER_THIRD);
-                thirdSql.append(" (id,userid,type) values(?,?,?)");
+                thirdSql.append(" (id,user_id,type) values(?,?,?)");
                 rs += qr.update(connection, thirdSql.toString(), thirdparty.getId(), thirdparty.getUserId(), thirdparty.getType());
                 if (rs > 0) {
                     if (org.apache.commons.lang3.StringUtils.isBlank(user.getAvatar())) {
@@ -255,7 +255,7 @@ public class DataFactory implements Data {
                 qr.update(connection, "delete from " + TableNames.INTERFACE_FOLDER + " where id = ?", parentId);
                 StringBuilder sql = new StringBuilder();
                 sql.append("delete from " + TableNames.DOC);
-                sql.append("where parentId=?");
+                sql.append("where parent_id=?");
                 return qr.update(connection, sql.toString(), parentId);
             }
         });
@@ -268,9 +268,9 @@ public class DataFactory implements Data {
             public List<Team> handle(Connection connection, QueryRunner qr) throws SQLException {
                 StringBuilder sql = new StringBuilder("select t.* from ")
                         .append(TableNames.TEAM)
-                        .append(" t left join team_user tu on tu.teamId=t.id ")
-                        .append(" where tu.userId=? or t.userId=?")
-                        .append(" order by tu.createTime desc,t.createTime desc ");
+                        .append(" t left join team_user tu on tu.team_id=t.id ")
+                        .append(" where tu.user_id=? or t.user_id=?")
+                        .append(" order by tu.create_time desc,t.create_time desc ");
 
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(Team.class), userId, userId);
             }
@@ -286,11 +286,11 @@ public class DataFactory implements Data {
                 if (status == null) {
                     status = "VALID";
                 }
-                StringBuilder sql = new StringBuilder("select DISTINCT p.*,u.nickname userName,pu.editable,pu.commonlyUsed from ").append(TableNames.PROJECT)
-                        .append(" p left join user u on u.id = p.userId ")
-                        .append(" left join project_user pu on pu.projectId = p.id ")
-                        .append("  where ( pu.userId=?) and p.status=?")
-                        .append(" order by createTime desc");
+                StringBuilder sql = new StringBuilder("select DISTINCT p.*,u.nickname user_name,pu.editable,pu.commonly_used from ").append(TableNames.PROJECT)
+                        .append(" p left join sys_user u on u.id = p.user_id ")
+                        .append(" left join project_user pu on pu.project_id = p.id ")
+                        .append(" where ( pu.user_id=?) and p.status=?")
+                        .append(" order by create_time desc");
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(Project.class), pagination.getParams().get("userId"), status);
             }
         });
@@ -301,7 +301,7 @@ public class DataFactory implements Data {
         return process(new Handler<List<User>>() {
             @Override
             public List<User> handle(Connection connection, QueryRunner qr) throws SQLException {
-                StringBuilder sql = new StringBuilder("select u.id,u.nickname,u.avatar,u.email,pu.editable from user u left join project_user pu on pu.userId=u.id where pu.projectId=?");
+                StringBuilder sql = new StringBuilder("select u.id,u.nickname,u.avatar,u.email,pu.editable from sys_user u left join project_user pu on pu.user_id=u.id where pu.project_id=?");
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(User.class), projectId);
             }
         });
@@ -314,8 +314,8 @@ public class DataFactory implements Data {
             public List<User> handle(Connection connection, QueryRunner qr) throws SQLException {
                 StringBuilder sql = new StringBuilder("select u.id,u.nickname,avatar,u.email from " + TableNames.USER + " u \n" +
                         "where u.id in (\n" +
-                        "\tselect userId from " + TableNames.PROJECT_USER + " where projectId in (\n" +
-                        "\t\tselect projectId from " + TableNames.PROJECT_USER + " where userId=?\n" +
+                        "\tselect user_id from " + TableNames.PROJECT_USER + " where project_id in (\n" +
+                        "\t\tselect project_id from " + TableNames.PROJECT_USER + " where user_id=?\n" +
                         "\t)\n" +
                         ")\n");
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(User.class), userId);
@@ -330,30 +330,30 @@ public class DataFactory implements Data {
             @Override
             public Integer handle(Connection connection, QueryRunner qr) throws SQLException {
                 //删除接口
-                StringBuilder sql = new StringBuilder("delete from "+TableNames.DOC+" where projectId in (\n" +
-                        "\tselect id from project where teamId= ?\n" +
+                StringBuilder sql = new StringBuilder("delete from "+TableNames.DOC+" where project_id in (\n" +
+                        "\tselect id from project where team_id= ?\n" +
                         ")");
                 int rs = qr.update(connection,sql.toString(),id);
                 //删除接口文件夹
-                sql = new StringBuilder("delete from "+TableNames.INTERFACE_FOLDER+" where projectId in (\n" +
-                        "\tselect id from project where teamId= ?\n" +
+                sql = new StringBuilder("delete from "+TableNames.INTERFACE_FOLDER+" where project_id in (\n" +
+                        "\tselect id from project where team_id= ?\n" +
                         ")");
                 rs += qr.update(connection,sql.toString(),id);
                 //删除项目操作日志
-                sql = new StringBuilder("delete from "+TableNames.PROJECT_LOG+" where projectId in (\n" +
-                        "\tselect id from project where teamId= ?\n" +
+                sql = new StringBuilder("delete from "+TableNames.PROJECT_LOG+" where project_id in (\n" +
+                        "\tselect id from project where team_id= ?\n" +
                         ")");
                 rs += qr.update(connection,sql.toString(),id);
                 //删除项目与用户关联
-                sql = new StringBuilder("delete from project_user where projectId in (\n" +
-                        "\tselect id from project where teamId= ?\n" +
+                sql = new StringBuilder("delete from project_user where project_id in (\n" +
+                        "\tselect id from project where team_id= ?\n" +
                         ")");
                 rs += qr.update(connection,sql.toString(),id);
                 //删除团队与用户关联
-                sql = new StringBuilder("delete from team_user where teamId=?");
+                sql = new StringBuilder("delete from team_user where team_id=?");
                 rs += qr.update(connection,sql.toString(),id);
                 //删除项目
-                sql = new StringBuilder("delete from "+TableNames.PROJECT+" where teamId = ?");
+                sql = new StringBuilder("delete from "+TableNames.PROJECT+" where team_id = ?");
                 rs += qr.update(connection,sql.toString(),id);
                 //删除团队
                 sql = new StringBuilder("delete from "+TableNames.TEAM+" where id = ?");
@@ -371,7 +371,7 @@ public class DataFactory implements Data {
             public Integer handle(Connection connection, QueryRunner qr) throws SQLException {
                 StringBuilder sql = new StringBuilder("update " + TableNames.TEAM + " set status=? where id =?");
                 int rs = qr.update(connection, sql.toString(), Team.Status.INVALID, id);
-                sql = new StringBuilder("update " + TableNames.PROJECT + " set status=? where teamId=?");
+                sql = new StringBuilder("update " + TableNames.PROJECT + " set status=? where team_id=?");
                 rs += qr.update(connection, sql.toString(), Team.Status.INVALID, id);
                 return rs;
             }
@@ -393,13 +393,13 @@ public class DataFactory implements Data {
                 //删除项目
                 int rs = qr.update(connection, "delete from " + TableNames.PROJECT + " where id =?", id);
                 //删除文档
-                rs += qr.update(connection, "delete from " + TableNames.DOC + " where projectid =?", id);
+                rs += qr.update(connection, "delete from " + TableNames.DOC + " where project_id =?", id);
                 //删除文档历史
-                rs += qr.update(connection, "delete from " + TableNames.DOC_HISTORY + " where projectid =?", id);
+                rs += qr.update(connection, "delete from " + TableNames.DOC_HISTORY + " where project_id =?", id);
                 //删除项目与用户关联
-                rs += qr.update(connection, "delete from " + TableNames.PROJECT_USER + " where projectid =?", id);
+                rs += qr.update(connection, "delete from " + TableNames.PROJECT_USER + " where project_id =?", id);
                 //删除分享
-                rs += qr.update(connection, "delete from " + TableNames.SHARE + " where projectid =?", id);
+                rs += qr.update(connection, "delete from " + TableNames.SHARE + " where project_id =?", id);
                 return rs;
             }
         });
@@ -420,7 +420,7 @@ public class DataFactory implements Data {
                     }
                 }
                 _excludeIds_ = _excludeIds_.delete(_excludeIds_.length() - 1, _excludeIds_.length());
-                StringBuilder sql = new StringBuilder("select id,email,nickname from user where  id not in(" + _excludeIds_ + ") and instr(nickname , ?)>0 order by length(nickname) asc limit 5");
+                StringBuilder sql = new StringBuilder("select id,email,nickname from sys_user where  id not in(" + _excludeIds_ + ") and instr(nickname , ?)>0 order by length(nickname) asc limit 5");
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(User.class), key);
             }
         });
@@ -441,7 +441,7 @@ public class DataFactory implements Data {
         return process(new Handler<Boolean>() {
             @Override
             public Boolean handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select count(id) from " + TableNames.PROJECT_USER + " where projectId=? and userId=?", new IntegerResultHandler(), projectId, userId) > 0;
+                return qr.query(connection, "select count(id) from " + TableNames.PROJECT_USER + " where project_id=? and user_id=?", new IntegerResultHandler(), projectId, userId) > 0;
             }
         });
     }
@@ -451,7 +451,7 @@ public class DataFactory implements Data {
         return process(new Handler<Integer>() {
             @Override
             public Integer handle(Connection connection, QueryRunner qr) throws SQLException {
-                String sql = "delete from " + TableNames.PROJECT_USER + " where projectId=? and userId=?";
+                String sql = "delete from " + TableNames.PROJECT_USER + " where project_id=? and user_id=?";
                 return qr.update(connection, sql, projectId, userId);
             }
         });
@@ -464,7 +464,7 @@ public class DataFactory implements Data {
             @Override
             public List<Doc> handle(Connection connection, QueryRunner qr) throws SQLException {
                 //不查询content
-                StringBuilder sql = new StringBuilder("select id,name,sort,type,parentId,projectId from ").append(TableNames.DOC).append(" where projectId=? order by sort asc");
+                StringBuilder sql = new StringBuilder("select id,name,sort,type,parent_id,project_id from ").append(TableNames.DOC).append(" where project_id=? order by sort asc");
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(Doc.class), projectId);
             }
         });
@@ -477,8 +477,8 @@ public class DataFactory implements Data {
             @Override
             public List<Doc> handle(Connection connection, QueryRunner qr) throws SQLException {
                 //不查询content
-                String sqlstr = "select id,name,sort,type,parentId,projectId" + (full ? ",content" : "") + " from ";
-                StringBuilder sql = new StringBuilder(sqlstr).append(TableNames.DOC).append(" where projectId=? order by sort asc");
+                String sqlstr = "select id,name,sort,type,parent_id,project_id" + (full ? ",content" : "") + " from ";
+                StringBuilder sql = new StringBuilder(sqlstr).append(TableNames.DOC).append(" where project_id=? order by sort asc");
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(Doc.class), projectId);
             }
         });
@@ -489,7 +489,7 @@ public class DataFactory implements Data {
         return process(new Handler<List<String>>() {
             @Override
             public List<String> handle(Connection connection, QueryRunner qr) throws SQLException {
-                List<Doc> docs = qr.query(connection, "select id from " + TableNames.DOC + " where parentId=?", new BeanListHandler<>(Doc.class), parentId);
+                List<Doc> docs = qr.query(connection, "select id from " + TableNames.DOC + " where parent_id=?", new BeanListHandler<>(Doc.class), parentId);
                 List<String> ids = new ArrayList<String>();
                 if (docs != null) {
                     for (Doc temp : docs) {
@@ -606,7 +606,7 @@ public class DataFactory implements Data {
         return process(new Handler<List<Doc>>() {
             @Override
             public List<Doc> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select id,name from doc where projectId=? and parentId=? order by sort asc", new BeanListHandler<>(Doc.class), projectId, parentId);
+                return qr.query(connection, "select id,name from doc where project_id=? and parent_id=? order by sort asc", new BeanListHandler<>(Doc.class), projectId, parentId);
             }
         });
     }
@@ -616,7 +616,7 @@ public class DataFactory implements Data {
         return process(new Handler<List<String>>() {
             @Override
             public List<String> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select id from project where status='VALID' and permission='PUBLIC' order by createTime desc ", new ColumnListHandler<String>("id"));
+                return qr.query(connection, "select id from project where status='VALID' and permission='PUBLIC' order by create_time desc ", new ColumnListHandler<String>("id"));
             }
         });
     }
@@ -626,13 +626,13 @@ public class DataFactory implements Data {
         return process(new Handler<List<String>>() {
             @Override
             public List<String> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select docId from (select \n" +
-                        "docId,count(1) num\n" +
+                return qr.query(connection, "select doc_id from (select \n" +
+                        "doc_id,count(1) num\n" +
                         "from doc_history\n" +
-                        "group by docId \n" +
+                        "group by doc_id \n" +
                         "HAVING num > ?\n" +
                         "order by num desc \n" +
-                        ") t", new ColumnListHandler<String>("docId"), num);
+                        ") t", new ColumnListHandler<String>("doc_id"), num);
             }
         });
     }
@@ -647,12 +647,12 @@ public class DataFactory implements Data {
                 List<Map<String, Object>> docIdNums = getDocIdsWhenDocHistoryNumRatherThan(num);
                 int rs = 0;
                 for (Map<String, Object> item : docIdNums) {
-                    String docId = (String) item.get("docId");
-                    rs = qr.update(connection, "delete from doc_history where docId = ?\n" +
+                    String docId = (String) item.get("doc_id");
+                    rs = qr.update(connection, "delete from doc_history where doc_id = ?\n" +
                             "and id not in (\n" +
-                            "\tselect id from (select id from doc_history where docId = ? order by createTime desc limit ?) t\n" +
+                            "\tselect id from (select id from doc_history where doc_id = ? order by create_time desc limit ?) t\n" +
                             ") ", docId, docId, num);
-                    logger.info("删除超过15条历史记录的文档历史|docId={}", docId);
+                    logger.info("删除超过15条历史记录的文档历史|doc_id={}", docId);
                 }
                 return rs;
             }
@@ -664,8 +664,8 @@ public class DataFactory implements Data {
         process(new Handler<Object>() {
             @Override
             public Object handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.update(connection, "delete from doc_history where docId = ? and id not in (\n" +
-                        "select id from (select id from doc_history where docId = ? order by createTime desc limit ? ) t\n" +
+                return qr.update(connection, "delete from doc_history where doc_id = ? and id not in (\n" +
+                        "select id from (select id from doc_history where doc_id = ? order by create_time desc limit ? ) t\n" +
                         ")", docId, docId, num);
             }
         });
@@ -675,8 +675,8 @@ public class DataFactory implements Data {
         return process(new Handler<List<Map<String, Object>>>() {
             @Override
             public List<Map<String, Object>> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select count(1) num,docId from doc_history\n" +
-                        "group by docId \n" +
+                return qr.query(connection, "select count(1) num,doc_id from doc_history\n" +
+                        "group by doc_id \n" +
                         "having num > ?\n" +
                         "order by num desc ", new MapListHandler(), num);
             }
@@ -706,7 +706,7 @@ public class DataFactory implements Data {
                 AssertUtils.isTrue(fp.getEmail().equals(email), "无效token");
                 String sql = new StringBuilder("update ").append(TableNames.USER).append(" set password=? where email=?").toString();
                 int rs = qr.update(connection, sql, newPassword, email);
-                rs += qr.update(connection, new StringBuilder("update ").append(TableNames.FIND_PASSWORD).append(" set isUsed=1 where id =?").toString(), id);
+                rs += qr.update(connection, new StringBuilder("update ").append(TableNames.FIND_PASSWORD).append(" set is_used=1 where id =?").toString(), id);
                 return rs;
             }
         });
@@ -717,7 +717,7 @@ public class DataFactory implements Data {
         return process(new Handler<Boolean>() {
             @Override
             public Boolean handle(Connection connection, QueryRunner qr) throws SQLException {
-                String sql = new StringBuilder("select count(1) from ").append(TableNames.PROJECT_USER).append(" where userId=? and projectId=? and editable='YES'").toString();
+                String sql = new StringBuilder("select count(1) from ").append(TableNames.PROJECT_USER).append(" where user_id=? and project_id=? and editable='YES'").toString();
                 return qr.query(connection, sql, new IntegerResultHandler(), userId, projectId) > 0;
             }
         });
@@ -728,7 +728,7 @@ public class DataFactory implements Data {
         process(new Handler<Object>() {
             @Override
             public Object handle(Connection connection, QueryRunner qr) throws SQLException {
-                List<String> columns = qr.query(connection, "select type from user_third where userId = ?", new ColumnListHandler<String>("type"), user.getId());
+                List<String> columns = qr.query(connection, "select type from user_third where user_id = ?", new ColumnListHandler<String>("type"), user.getId());
                 if (columns != null && columns.size() > 0) {
                     for (String type : columns) {
                         user.getBindingMap().put(type, true);
@@ -745,7 +745,7 @@ public class DataFactory implements Data {
         return process(new Handler<Integer>() {
             @Override
             public Integer handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.update(connection, "delete from " + TableNames.USER_THIRD + " where userId=? and type=?", userId, type);
+                return qr.update(connection, "delete from " + TableNames.USER_THIRD + " where user_id=? and type=?", userId, type);
             }
         });
     }
@@ -796,7 +796,7 @@ public class DataFactory implements Data {
         return process(new Handler<String>() {
             @Override
             public String handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select editable from " + SqlUtils.getTableName(ProjectUser.class) + " where projectId=? and userId=? limit 1", new StringResultHandler(), projectId, userId);
+                return qr.query(connection, "select editable from " + SqlUtils.getTableName(ProjectUser.class) + " where project_id=? and user_id=? limit 1", new StringResultHandler(), projectId, userId);
             }
         });
     }
@@ -807,7 +807,7 @@ public class DataFactory implements Data {
         return process(new Handler<Integer>() {
             @Override
             public Integer handle(Connection connection, QueryRunner qr) throws SQLException {
-                String sql = "update " + SqlUtils.getTableName(ProjectUser.class) + " set editable=? where projectId = ? and userId = ?";
+                String sql = "update " + SqlUtils.getTableName(ProjectUser.class) + " set editable=? where project_id = ? and user_id = ?";
                 return qr.update(connection, sql, editable, projectId, userId);
             }
         });
@@ -819,7 +819,7 @@ public class DataFactory implements Data {
         return process(new Handler<Integer>() {
             @Override
             public Integer handle(Connection connection, QueryRunner qr) throws SQLException {
-                String sql = "update " + SqlUtils.getTableName(ProjectUser.class) + " set commonlyUsed=? where projectId = ? and userId = ?";
+                String sql = "update " + SqlUtils.getTableName(ProjectUser.class) + " set commonly_used=? where project_id = ? and user_id = ?";
                 return qr.update(connection, sql, isCommonlyUsed, projectId, userId);
             }
         });
@@ -832,8 +832,8 @@ public class DataFactory implements Data {
             public List<Share> handle(Connection connection, QueryRunner qr) throws SQLException {
                 StringBuilder sql = new StringBuilder();
                 sql.append("select s.*,u.nickname username from share s\n");
-                sql.append("left join user u on u.id = s.userid\n");
-                sql.append("where s.projectId = ?");
+                sql.append("left join sys_user u on u.id = s.user_id\n");
+                sql.append("where s.project_id = ?");
                 return qr.query(connection, sql.toString(), new BeanListHandler<>(Share.class), projectId);
             }
         });
@@ -872,7 +872,7 @@ public class DataFactory implements Data {
         return process(new Handler<List<ProjectLog>>() {
             @Override
             public List<ProjectLog> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select pl.*,u.nickname,u.avatar from " + TableNames.PROJECT_LOG + " pl left join user u on u.id = pl.userId where pl.projectId=? order by pl.createTime desc limit ?,?", new BeanListHandler<>(ProjectLog.class), pagination.getParams().get("projectId"), pagination.getStart(), pagination.getLimit());
+                return qr.query(connection, "select pl.*,u.nickname,u.avatar from " + TableNames.PROJECT_LOG + " pl left join sys_user u on u.id = pl.user_id where pl.project_id=? order by pl.create_time desc limit ?,?", new BeanListHandler<>(ProjectLog.class), pagination.getParams().get("projectId"), pagination.getStart(), pagination.getLimit());
             }
         });
     }
@@ -899,7 +899,7 @@ public class DataFactory implements Data {
         return process(new Handler<ProjectGlobal>() {
             @Override
             public ProjectGlobal handle(Connection connection, QueryRunner qr) throws SQLException {
-                ProjectGlobal pg = qr.query(connection, "select * from " + TableNames.PROJECT_GLOBAL + " where projectId=?", new BeanHandler<>(ProjectGlobal.class), projectId);
+                ProjectGlobal pg = qr.query(connection, "select * from " + TableNames.PROJECT_GLOBAL + " where project_id=?", new BeanHandler<>(ProjectGlobal.class), projectId);
                 if (pg == null) {
                     //会有并发问题
                     pg = generateProjectGlobal(projectId);
@@ -918,7 +918,7 @@ public class DataFactory implements Data {
         return process(new Handler<ProjectGlobal>() {
             @Override
             public ProjectGlobal handle(Connection connection, QueryRunner qr) throws SQLException {
-                ProjectGlobal pg = qr.query(connection, "select " + column + " from " + TableNames.PROJECT_GLOBAL + " where projectId=?", new BeanHandler<>(ProjectGlobal.class), projectId);
+                ProjectGlobal pg = qr.query(connection, "select " + column + " from " + TableNames.PROJECT_GLOBAL + " where project_id=?", new BeanHandler<>(ProjectGlobal.class), projectId);
                 if (pg == null) {
                     //会有并发问题
                     pg = generateProjectGlobal(projectId);
@@ -948,7 +948,7 @@ public class DataFactory implements Data {
         return process(new Handler<List<Attach>>() {
             @Override
             public List<Attach> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select * from " + TableNames.ATTACH + " where relatedId=? order by sort asc ,createtime asc", new BeanListHandler<>(Attach.class), relatedId);
+                return qr.query(connection, "select * from " + TableNames.ATTACH + " where related_id=? order by sort asc ,create_time asc", new BeanListHandler<>(Attach.class), relatedId);
             }
         });
     }
@@ -958,10 +958,10 @@ public class DataFactory implements Data {
         return process(new Handler<List<DocHistory>>() {
             @Override
             public List<DocHistory> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select h.*,u.nickname userName from " + TableNames.DOC_HISTORY + " h\n" +
-                        "left join " + TableNames.USER + " u on u.id = h.userId \n" +
-                        "where h.docId=?\n" +
-                        "order by createTime desc limit 20 ", new BeanListHandler<>(DocHistory.class), docId);
+                return qr.query(connection, "select h.*,u.nickname user_name from " + TableNames.DOC_HISTORY + " h\n" +
+                        "left join " + TableNames.USER + " u on u.id = h.user_id \n" +
+                        "where h.doc_id=?\n" +
+                        "order by create_time desc limit 20 ", new BeanListHandler<>(DocHistory.class), docId);
             }
         });
     }
@@ -971,7 +971,7 @@ public class DataFactory implements Data {
         return process(new Handler<Integer>() {
             @Override
             public Integer handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.update(connection, "delete from " + TableNames.DOC_HISTORY + " where docId=?", docId);
+                return qr.update(connection, "delete from " + TableNames.DOC_HISTORY + " where doc_id=?", docId);
             }
         });
     }
@@ -991,7 +991,7 @@ public class DataFactory implements Data {
         return process(new Handler<List<Doc>>() {
             @Override
             public List<Doc> handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select id,name from " + TableNames.DOC + " where projectId=? and (instr(name,?)>0  or instr(content,?)>0) order by sort asc ,createTime desc ", new BeanListHandler<>(Doc.class), projectId, text, text);
+                return qr.query(connection, "select id,name from " + TableNames.DOC + " where project_id=? and (instr(name,?)>0  or instr(content,?)>0) order by sort asc ,create_time desc ", new BeanListHandler<>(Doc.class), projectId, text, text);
             }
         });
     }
@@ -1001,7 +1001,7 @@ public class DataFactory implements Data {
         return process(new Handler<String>() {
             @Override
             public String handle(Connection connection, QueryRunner qr) throws SQLException {
-                return qr.query(connection, "select id from doc where projectId=? order by sort asc ,createTime asc limit 1", new StringResultHandler(), projectId);
+                return qr.query(connection, "select id from doc where project_id=? order by sort asc ,create_time asc limit 1", new StringResultHandler(), projectId);
             }
         });
     }

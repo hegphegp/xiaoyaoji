@@ -15,11 +15,11 @@ import java.util.Map;
  * @author: zhoujingjie
  * @Date: 16/5/22
  */
-@Alias("user")
+@Alias("sys_user")
 public class User implements Serializable {
     private String id;
     private String nickname;
-    private Date createtime;
+    private Date createTime;
     private String email;
     private String password;
     private String type;
@@ -50,12 +50,12 @@ public class User implements Serializable {
     }
 
 
-    public Date getCreatetime() {
-        return createtime;
+    public Date getCreateTime() {
+        return createTime;
     }
 
-    public void setCreatetime(Date createtime) {
-        this.createtime = createtime;
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
     public String getNickname() {
